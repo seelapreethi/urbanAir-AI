@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Default is Dark Mode */
+  :root {
+    --canvas: #0B0D10;
+    --surface: #14171B;
+    --surface-raised: #1B1F24;
+    --border: #23272E;
+    
+    --ink-primary: #EDEDEC;
+    --ink-secondary: #9A9FA8;
+    --ink-tertiary: #5C6169;
+    
+    --accent: #5B8CFF;
+    --accent-soft: rgba(91, 140, 255, 0.08);
+    
+    /* AQI Colors */
+    --aqi-good: #3DD68C;
+    --aqi-moderate: #E8C547;
+    --aqi-unhealthy-sensitive: #F2994A;
+    --aqi-unhealthy: #EF5C5C;
+    --aqi-very-unhealthy: #B24FE0;
+    --aqi-hazardous: #7A2E43;
+    
+    /* Semantic */
+    --success: #3DD68C;
+    --warning: #E8C547;
+    --danger: #FF6B6B;
+    --info: #5B8CFF;
+    
+    /* ShadCN Overlays (Dark map) */
+    --background: var(--canvas);
+    --foreground: var(--ink-primary);
+    
+    --card: var(--surface);
+    --card-foreground: var(--ink-primary);
+    
+    --popover: var(--surface-raised);
+    --popover-foreground: var(--ink-primary);
+    
+    --primary: var(--accent);
+    --primary-foreground: #0B0D10;
+    
+    --secondary: var(--surface-raised);
+    --secondary-foreground: var(--ink-primary);
+    
+    --muted: var(--surface);
+    --muted-foreground: var(--ink-secondary);
+    
+    --accent-ui: var(--accent-soft);
+    --accent-ui-foreground: var(--ink-primary);
+    
+    --destructive: var(--danger);
+    --destructive-foreground: #0B0D10;
+    
+    --input: var(--border);
+    --ring: var(--accent);
+    
+    --radius: 12px;
+  }
+
+  /* Light Mode is Secondary Override */
+  .light {
+    --canvas: #FAFAF9;
+    --surface: #FFFFFF;
+    --surface-raised: #FFFFFF;
+    --border: #E7E5E2;
+    
+    --ink-primary: #17181A;
+    --ink-secondary: #6B6F76;
+    --ink-tertiary: #9B9EA4;
+    
+    --accent: #5B8CFF;
+    --accent-soft: rgba(91, 140, 255, 0.08);
+    
+    /* ShadCN Overlays (Light map) */
+    --background: var(--canvas);
+    --foreground: var(--ink-primary);
+    
+    --card: var(--surface);
+    --card-foreground: var(--ink-primary);
+    
+    --popover: var(--surface-raised);
+    --popover-foreground: var(--ink-primary);
+    
+    --primary: var(--accent);
+    --primary-foreground: #FAFAF9;
+    
+    --secondary: var(--border);
+    --secondary-foreground: var(--ink-primary);
+    
+    --muted: #FAFAF9;
+    --muted-foreground: var(--ink-secondary);
+    
+    --destructive: var(--danger);
+    --destructive-foreground: #FFFFFF;
+    
+    --input: var(--border);
+    --ring: var(--accent);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-[var(--border)];
+  }
+  body {
+    background-color: var(--canvas);
+    color: var(--ink-primary);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom Signature Elements */
+
+/* AQI Pulse Ring Animation */
+@keyframes breathing {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+    box-shadow: 0 0 15px var(--pulse-color, var(--accent));
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+
+.aqi-pulse-ring-active {
+  animation: breathing 3s infinite ease-in-out;
+}
+
+/* Skeleton Shimmering */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-raised) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
