@@ -78,11 +78,19 @@ export default function CommandCenterPage() {
     fetchDashboardData
   } = useDashboardStore();
   const { notifySuccess } = useUIStore();
+  const [lastUpdated, setLastUpdated] = React.useState<string | null>(null);
 
   // Fetch dashboard payload when selected city context switches
   useEffect(() => {
     fetchDashboardData(selectedCity);
   }, [selectedCity, fetchDashboardData]);
+
+  // Track the timestamp when dashboard data updates successfully
+  useEffect(() => {
+    if (dashboardData) {
+      setLastUpdated(new Date().toLocaleTimeString());
+    }
+  }, [dashboardData]);
 
   const handleRefresh = async () => {
     await fetchDashboardData(selectedCity);
@@ -140,12 +148,28 @@ export default function CommandCenterPage() {
       {/* Welcome Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight font-display text-ink-primary">
-            AI Command Center
-          </h1>
-          <p className="text-sm text-ink-secondary mt-1">
-            Real-time smart city environmental parameters and prognostic air quality indicators.
-          </p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight font-display text-ink-primary">
+              AI Command Center
+            </h1>
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+              LIVE DATA
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-ink-secondary">
+            <span>Real-time smart city environmental parameters.</span>
+            {lastUpdated && (
+              <>
+                <span className="text-ink-tertiary font-mono">|</span>
+                <span className="font-mono text-ink-tertiary">Last updated: {lastUpdated}</span>
+                <span className="text-ink-tertiary font-mono">|</span>
+                <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-surface-raised border border-border text-ink-tertiary">
+                  Source: Open-Meteo & CPCB
+                </span>
+              </>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button 

@@ -45,7 +45,7 @@ export default function ReportsPage() {
   const [mounted, setMounted] = useState(false);
 
   // Form states
-  const [reportTitle, setReportTitle] = useState("Vijayawada Air Quality Audit");
+  const [reportTitle, setReportTitle] = useState(`${selectedCity} Air Quality Audit`);
   const [reportType, setReportType] = useState("Weekly Report");
   const [fileFormat, setFileFormat] = useState("PDF");
   const [selectedModules, setSelectedModules] = useState<string[]>(["AQI Overview", "Hotspots List"]);
@@ -308,7 +308,7 @@ export default function ReportsPage() {
                     </div>
 
                     <a
-                      href={`/exports/reports/vijayawada_report_${log.file_format.toLowerCase()}`}
+                      href={`/exports/reports/${selectedCity.toLowerCase()}_report_${(log.file_format || 'pdf').toLowerCase()}`}
                       download
                       className="w-full h-7 rounded border border-border bg-surface text-ink-secondary hover:bg-surface-raised flex items-center justify-center gap-1 text-[10px] font-bold mt-1.5 transition-colors"
                     >

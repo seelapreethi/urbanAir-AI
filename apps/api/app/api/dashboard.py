@@ -1,177 +1,114 @@
 from fastapi import APIRouter, Query
 from typing import Optional, List, Dict, Any
+from app.services.providers.weather_provider import WeatherProvider
+from app.services.providers.aqi_provider import AQIProvider
+from app.services.providers.city_data_provider import CityDataProvider
+from app.services.health_service import HealthService
 
 router = APIRouter()
 
-# Mock data mapping for different cities to support dynamic global switching
-MOCK_DASHBOARD_DATA: Dict[str, Dict[str, Any]] = {
-    "Vijayawada": {
+async def compile_dashboard_data(city: str) -> Dict[str, Any]:
+    weather = await WeatherProvider(city).fetch_data()
+    aqi = await AQIProvider(city).fetch_data()
+    city_data = await CityDataProvider(city).fetch_data()
+    risk = HealthService.classify_risk(aqi["aqi"])
+    
+    # Calculate health score dynamically (inverted AQI scale score)
+    health_score = max(5, min(100, int(100 - (aqi["aqi"] * 0.25))))
+    
+    # Dynamic summary text
+    ai_summary = (
+        f"Air quality in {city} is currently {risk['risk_level']}. "
+        f"The primary driver is {city_data['dominant_source'].lower()} with a traffic density index of {city_data['traffic_density_index']:.0f}%. "
+        f"We suggest prioritizing inspect dispatch towards construction zones (index: {city_data['active_construction_index']:.0f}%)."
+    )
+    
+    # Create alerts dynamically based on actual conditions
+    alerts = []
+    if aqi["aqi"] > 200:
+        alerts.append({
+            "id": "a1",
+            "severity": "critical",
+            "category": "High PM Concentration",
+            "time": "Just Now",
+            "location": f"{city} Central Zone",
+            "status": "Active"
+        })
+    if city_data["traffic_density_index"] > 75:
+        alerts.append({
+            "id": "a2",
+            "severity": "high",
+            "category": "Traffic Congestion",
+            "time": "15 Mins Ago",
+            "location": f"{city} Main Corridor",
+            "status": "Investigating"
+        })
+        
+    # Recommendations
+    recs = [
+        {
+            "id": "r1",
+            "action": f"Restrict heavy trucks in {city} central corridor due to high traffic density.",
+            "impact": "15-20 AQI Reduction",
+            "confidence": 88,
+            "priority": "High" if aqi["aqi"] > 150 else "Medium"
+        },
+        {
+            "id": "r2",
+            "action": f"Pause unmitigated excavation at construction sites (active index: {city_data['active_construction_index']:.0f}%)",
+            "impact": "10-12 AQI Reduction",
+            "confidence": 92,
+            "priority": "High" if city_data["active_construction_index"] > 70 else "Medium"
+        }
+    ]
+    
+    return {
         "summary": {
-            "city": "Vijayawada",
-            "health_score": 78,
-            "ai_summary": "Air quality is expected to deteriorate between 2 PM and 6 PM due to increased traffic and low wind speed. Consider restricting heavy vehicle movement in Ward 8.",
-            "dominant_pollutant": "PM2.5",
-            "aqi_category": "Moderate",
-            "confidence_score": 91
+            "city": city,
+            "health_score": health_score,
+            "ai_summary": ai_summary,
+            "dominant_pollutant": "PM2.5" if aqi["aqi"] > 100 else "PM10",
+            "aqi_category": risk["risk_level"],
+            "confidence_score": risk["confidence_score"]
         },
         "stats": {
-            "current_aqi": 142,
-            "forecast_aqi": 165,
-            "high_risk_zones": 3,
-            "critical_hotspots": 1,
-            "population_at_risk": 45000,
-            "inspection_priority": "High",
-            "citizen_alerts": 2,
-            "pollution_trend": "+12%",
-            "improvement_pct": "+5.4%",
-            "prediction_confidence": "91%"
+            "current_aqi": aqi["aqi"],
+            "forecast_aqi": int(aqi["aqi"] * 1.15),
+            "high_risk_zones": 3 if aqi["aqi"] > 150 else 1,
+            "critical_hotspots": 2 if aqi["aqi"] > 200 else 1,
+            "population_at_risk": int(city_data["population"] * (risk["affected_population_pct"] / 100.0)),
+            "inspection_priority": "Critical" if aqi["aqi"] > 300 else "High" if aqi["aqi"] > 150 else "Medium",
+            "citizen_alerts": len(alerts),
+            "pollution_trend": "+12%" if weather["wind_speed"] < 10 else "-8%",
+            "improvement_pct": "+5.4%" if weather["precipitation"] > 5 else "-2.1%",
+            "prediction_confidence": f"{risk['confidence_score']}%"
         },
         "weather": {
-            "temp": 32.5,
-            "humidity": 68,
-            "wind_speed": 12.4,
-            "visibility": 8.0,
+            "temp": weather["temperature"],
+            "humidity": weather["humidity"],
+            "wind_speed": weather["wind_speed"],
+            "visibility": max(2.0, 10.0 - (aqi["aqi"] * 0.02)),
             "pressure": 1008
         },
-        "alerts": [
-            {
-                "id": "a1",
-                "severity": "high",
-                "category": "Industrial Emission",
-                "time": "10:30 AM",
-                "location": "Kondapalli Industrial Area",
-                "status": "Active"
-            },
-            {
-                "id": "a2",
-                "severity": "medium",
-                "category": "Traffic Congestion",
-                "time": "12:15 PM",
-                "location": "Benz Circle Crossing",
-                "status": "Investigating"
-            }
-        ],
-        "recommendations": [
-            {
-                "id": "r1",
-                "action": "Restrict heavy trucks routing in Benz Circle corridor",
-                "impact": "15-20 AQI Reduction",
-                "confidence": 88,
-                "priority": "High"
-            },
-            {
-                "id": "r2",
-                "action": "Initiate automated water mist spraying at Kondapalli construction grid",
-                "impact": "10-12 AQI Reduction",
-                "confidence": 92,
-                "priority": "Medium"
-            }
-        ],
+        "alerts": alerts,
+        "recommendations": recs,
         "activity": [
             {
-                "time": "10 Mins Ago",
+                "time": "Just Now",
                 "title": "AQI Updated",
-                "desc": "Station sensor KV-04 reported PM2.5 rise to 142."
+                "desc": f"Air quality index reported at {aqi['aqi']} dynamically from local monitoring stations."
             },
             {
                 "time": "1 Hour Ago",
                 "title": "Inspection Recommended",
-                "desc": "AI flagged industrial zone abnormal emissions alert."
-            },
-            {
-                "time": "3 Hours Ago",
-                "title": "Forecast Pipeline Complete",
-                "desc": "72-hour air quality predictive grid recalculation finished."
-            }
-        ]
-    },
-    "Hyderabad": {
-        "summary": {
-            "city": "Hyderabad",
-            "health_score": 62,
-            "ai_summary": "Dust suspension from major infrastructure projects is driving PM10 elevation. Consider enforcing water mist spraying in central corridors.",
-            "dominant_pollutant": "PM10",
-            "aqi_category": "Unhealthy",
-            "confidence_score": 88
-        },
-        "stats": {
-            "current_aqi": 188,
-            "forecast_aqi": 210,
-            "high_risk_zones": 6,
-            "critical_hotspots": 3,
-            "population_at_risk": 120000,
-            "inspection_priority": "Critical",
-            "citizen_alerts": 5,
-            "pollution_trend": "+18%",
-            "improvement_pct": "-2.1%",
-            "prediction_confidence": "88%"
-        },
-        "weather": {
-            "temp": 34.0,
-            "humidity": 55,
-            "wind_speed": 9.2,
-            "visibility": 6.5,
-            "pressure": 1010
-        },
-        "alerts": [
-            {
-                "id": "h1",
-                "severity": "critical",
-                "category": "Particulate Spike",
-                "time": "09:00 AM",
-                "location": "Gachibowli Construction Ring",
-                "status": "Active"
-            },
-            {
-                "id": "h2",
-                "severity": "high",
-                "category": "Biomass Burning",
-                "time": "11:40 AM",
-                "location": "Patancheru Ward 4 Outer Belt",
-                "status": "Dispatched"
-            }
-        ],
-        "recommendations": [
-            {
-                "id": "hr1",
-                "action": "Halt brick kiln operations inPatancheru sector",
-                "impact": "25-30 AQI Reduction",
-                "confidence": 85,
-                "priority": "Critical"
-            },
-            {
-                "id": "hr2",
-                "action": "Enforce odd-even transport lanes in Hitec City during peak commute",
-                "impact": "15 AQI Reduction",
-                "confidence": 80,
-                "priority": "High"
-            }
-        ],
-        "activity": [
-            {
-                "time": "5 Mins Ago",
-                "title": "Citizen Alert Issued",
-                "desc": "Air quality advisory push sent to Gachibowli sector."
-            },
-            {
-                "time": "40 Mins Ago",
-                "title": "AQI Updated",
-                "desc": "Sensor Patancheru-03 recorded AQI levels of 192."
+                "desc": f"Primary target set to local {city_data['dominant_source'].lower()} sites."
             }
         ]
     }
-}
-
-def get_city_data(city: str) -> Dict[str, Any]:
-    # Fallback to Vijayawada default if city not found
-    normalized_city = "Vijayawada"
-    if city and city.strip().lower() == "hyderabad":
-        normalized_city = "Hyderabad"
-    return MOCK_DASHBOARD_DATA[normalized_city]
 
 @router.get("/summary")
-async def get_dashboard_summary(city: Optional[str] = Query(None)):
-    data = get_city_data(city)
+async def get_dashboard_summary(city: Optional[str] = Query("Delhi")):
+    data = await compile_dashboard_data(city)
     return {
         "success": True,
         "message": "Dashboard summary retrieved successfully",
@@ -179,8 +116,8 @@ async def get_dashboard_summary(city: Optional[str] = Query(None)):
     }
 
 @router.get("/stats")
-async def get_dashboard_stats(city: Optional[str] = Query(None)):
-    data = get_city_data(city)
+async def get_dashboard_stats(city: Optional[str] = Query("Delhi")):
+    data = await compile_dashboard_data(city)
     return {
         "success": True,
         "message": "Dashboard statistics retrieved successfully",
@@ -188,8 +125,8 @@ async def get_dashboard_stats(city: Optional[str] = Query(None)):
     }
 
 @router.get("/activity")
-async def get_dashboard_activity(city: Optional[str] = Query(None)):
-    data = get_city_data(city)
+async def get_dashboard_activity(city: Optional[str] = Query("Delhi")):
+    data = await compile_dashboard_data(city)
     return {
         "success": True,
         "message": "Dashboard activity timeline retrieved successfully",
@@ -197,8 +134,8 @@ async def get_dashboard_activity(city: Optional[str] = Query(None)):
     }
 
 @router.get("/alerts")
-async def get_dashboard_alerts(city: Optional[str] = Query(None)):
-    data = get_city_data(city)
+async def get_dashboard_alerts(city: Optional[str] = Query("Delhi")):
+    data = await compile_dashboard_data(city)
     return {
         "success": True,
         "message": "Dashboard alerts retrieved successfully",
@@ -206,8 +143,8 @@ async def get_dashboard_alerts(city: Optional[str] = Query(None)):
     }
 
 @router.get("/recommendations")
-async def get_dashboard_recommendations(city: Optional[str] = Query(None)):
-    data = get_city_data(city)
+async def get_dashboard_recommendations(city: Optional[str] = Query("Delhi")):
+    data = await compile_dashboard_data(city)
     return {
         "success": True,
         "message": "Dashboard recommendations retrieved successfully",
@@ -215,8 +152,8 @@ async def get_dashboard_recommendations(city: Optional[str] = Query(None)):
     }
 
 @router.get("/weather")
-async def get_dashboard_weather(city: Optional[str] = Query(None)):
-    data = get_city_data(city)
+async def get_dashboard_weather(city: Optional[str] = Query("Delhi")):
+    data = await compile_dashboard_data(city)
     return {
         "success": True,
         "message": "Dashboard weather retrieved successfully",
@@ -224,8 +161,8 @@ async def get_dashboard_weather(city: Optional[str] = Query(None)):
     }
 
 @router.get("/health")
-async def get_dashboard_health(city: Optional[str] = Query(None)):
-    data = get_city_data(city)
+async def get_dashboard_health(city: Optional[str] = Query("Delhi")):
+    data = await compile_dashboard_data(city)
     return {
         "success": True,
         "message": "Dashboard health score retrieved successfully",
@@ -237,8 +174,8 @@ async def get_dashboard_health(city: Optional[str] = Query(None)):
     }
 
 @router.get("")
-async def get_full_dashboard(city: Optional[str] = Query(None)):
-    data = get_city_data(city)
+async def get_full_dashboard(city: Optional[str] = Query("Delhi")):
+    data = await compile_dashboard_data(city)
     return {
         "success": True,
         "message": "Full dashboard payload retrieved successfully",

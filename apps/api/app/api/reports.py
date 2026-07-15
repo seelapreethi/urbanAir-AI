@@ -19,14 +19,14 @@ def get_reports_templates():
     return ReportService.get_templates()
 
 @router.post("/generate", tags=["reports"])
-def generate_custom_report(
+async def generate_custom_report(
     title: str = Body(..., embed=True),
     report_type: str = Body(..., embed=True),
     file_format: str = Body("PDF", embed=True),
-    city: str = Body("Vijayawada", embed=True),
+    city: str = Body("Delhi", embed=True),
     modules: List[str] = Body([], embed=True)
 ):
-    res = ReportService.generate_report(title, report_type, file_format, city, modules)
+    res = await ReportService.generate_report(title, report_type, file_format, city, modules)
     
     # Append to mock log locally for visual history persistence
     MOCK_REPORTS_LOG.insert(0, {

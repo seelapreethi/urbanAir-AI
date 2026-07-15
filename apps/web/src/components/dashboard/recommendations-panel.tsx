@@ -18,7 +18,7 @@ interface RecommendationsPanelProps {
 
 export function RecommendationsPanel({ recommendations = [] }: RecommendationsPanelProps) {
   const getPriorityVariant = (priority: string) => {
-    switch (priority.toLowerCase()) {
+    switch ((priority || "").toLowerCase()) {
       case "critical":
         return "danger";
       case "high":

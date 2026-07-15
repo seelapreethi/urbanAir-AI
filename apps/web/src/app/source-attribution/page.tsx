@@ -60,8 +60,8 @@ export default function SourceAttributionPage() {
   // Filter sources based on search
   const filteredSources = mapSources.filter(
     (src) =>
-      src.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      src.type.toLowerCase().includes(searchQuery.toLowerCase())
+      (src.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (src.type || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

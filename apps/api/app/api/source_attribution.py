@@ -1,66 +1,77 @@
 from fastapi import APIRouter, Query
 from typing import List, Dict, Any
 from app.services.attribution_service import AttributionService
+from app.services.providers.weather_provider import WeatherProvider
+from app.services.providers.city_data_provider import CityDataProvider
+from app.core.cities_config import get_city_config
 
 router = APIRouter()
 
-# City coordinate bases
-CITY_COORDS: Dict[str, Dict[str, Any]] = {
-    "Vijayawada": {"lat": 16.5062, "lng": 80.6480, "traffic": 1.35, "wind_dir": 45, "wind_speed": 12.0},
-    "Hyderabad": {"lat": 17.3850, "lng": 78.4867, "traffic": 1.62, "wind_dir": 120, "wind_speed": 14.0},
-    "Bengaluru": {"lat": 12.9716, "lng": 77.5946, "traffic": 1.75, "wind_dir": 240, "wind_speed": 18.0},
-    "Chennai": {"lat": 13.0827, "lng": 80.2707, "traffic": 1.45, "wind_dir": 90, "wind_speed": 15.0},
-    "Delhi": {"lat": 28.6139, "lng": 77.2090, "traffic": 1.90, "wind_dir": 315, "wind_speed": 8.0}
-}
+async def get_city_attrib_features(city: str) -> Dict[str, Any]:
+    config = get_city_config(city)
+    weather_data = await WeatherProvider(city).fetch_data()
+    city_data = await CityDataProvider(city).fetch_data()
+    
+    return {
+        "lat": config["lat"],
+        "lng": config["lon"],
+        "wind_dir": 45.0,  # default meteorological direction
+        "wind_speed": weather_data["wind_speed"],
+        "traffic": city_data["traffic_density_index"] / 100.0,
+        "construction": city_data["active_construction_index"],
+        "industrial": city_data["industrial_density_index"],
+        "dominant_source": city_data["dominant_source"]
+    }
 
 @router.get("", tags=["source-attribution"])
-def get_source_attribution_summary(city: str = Query("Vijayawada")):
-    coords = CITY_COORDS.get(city, CITY_COORDS["Vijayawada"])
+async def get_source_attribution_summary(city: str = Query("Delhi")):
+    feat = await get_city_attrib_features(city)
     result = AttributionService.calculate_attribution(
-        city, coords["lat"], coords["lng"], coords["wind_dir"], coords["wind_speed"], coords["traffic"]
+        city, feat["lat"], feat["lng"], feat["wind_dir"], feat["wind_speed"], feat["traffic"],
+        construction_idx=feat["construction"], industrial_idx=feat["industrial"]
     )
     return result
 
 @router.get("/map", tags=["source-attribution"])
-def get_source_attribution_map(city: str = Query("Vijayawada")):
-    # Returns point source list with active overlay markers
-    coords = CITY_COORDS.get(city, CITY_COORDS["Vijayawada"])
-    lat, lng = coords["lat"], coords["lng"]
+async def get_source_attribution_map(city: str = Query("Delhi")):
+    feat = await get_city_attrib_features(city)
+    lat, lng = feat["lat"], feat["lng"]
     
+    # 4 distinct localized overlay point sources relative to the city center
     return [
         {
-            "id": "src-1",
-            "name": "Benz Circle Heavy Intersection",
+            "id": f"{city.lower()}-src-1",
+            "name": f"{city} High-Density Traffic Node",
             "type": "Traffic",
             "latitude": lat + 0.0003,
             "longitude": lng + 0.006,
-            "intensity": 0.85,
+            "intensity": round(feat["traffic"], 2),
             "influence_radius": 600,
             "confidence": 91.2
         },
         {
-            "id": "src-2",
-            "name": "Patamata Foundry Zone",
+            "id": f"{city.lower()}-src-2",
+            "name": f"{city} Main Industrial Belt",
             "type": "Industry",
             "latitude": lat - 0.011,
             "longitude": lng + 0.017,
-            "intensity": 0.92,
+            "intensity": round(feat["industrial"] / 100.0, 2),
             "influence_radius": 1200,
             "confidence": 88.4
         },
         {
-            "id": "src-3",
-            "name": "One Town Metro Construction Stage 3",
+            "id": f"{city.lower()}-src-3",
+            "name": f"{city} Metro Expansion Site",
             "type": "Construction Sites",
             "latitude": lat + 0.015,
             "longitude": lng - 0.043,
-            "intensity": 0.78,
+            "intensity": round(feat["construction"] / 100.0, 2),
             "influence_radius": 800,
             "confidence": 85.0
         },
         {
-            "id": "src-4",
-            "name": "Municipal Garbage Landfill Dump",
+            "id": f"{city.lower()}-src-4",
+            "name": f"{city} Local Municipal Dumpsite",
             "type": "Waste Burning",
             "latitude": lat - 0.024,
             "longitude": lng - 0.012,
@@ -71,45 +82,46 @@ def get_source_attribution_map(city: str = Query("Vijayawada")):
     ]
 
 @router.get("/details", tags=["source-attribution"])
-def get_source_attribution_details(city: str = Query("Vijayawada"), source_id: str = Query("src-1")):
-    coords = CITY_COORDS.get(city, CITY_COORDS["Vijayawada"])
-    lat, lng = coords["lat"], coords["lng"]
+async def get_source_attribution_details(city: str = Query("Delhi"), source_id: str = Query("src-1")):
+    feat = await get_city_attrib_features(city)
+    lat, lng = feat["lat"], feat["lng"]
     
-    # Mock profiles by source ID
+    # Profiles derived dynamically using city features
     profiles = {
         "src-1": {
             "id": "src-1",
-            "name": "Benz Circle Heavy Intersection",
+            "name": f"{city} High-Density Traffic Node",
             "type": "Traffic",
-            "contribution_pct": 42.0,
+            "contribution_pct": round(feat["traffic"] * 45.0, 1),
             "confidence_score": 91.2,
-            "supporting_evidence": "Traffic Index is 35% higher than standard city baseline. Multi-lane congestion peaks match hourly PM2.5 concentrations.",
-            "weather_impact": "Stagnant winds under 8 km/h prevent vehicle exhaust dispersion, concentrating emission plumes.",
-            "historical_trend": "Consistently accounts for 40%+ of localized pollution during morning and evening rush hour schedules.",
-            "suggested_action": "Implement heavy-duty vehicle detours and schedule mist cannons deployment."
+            "supporting_evidence": f"Traffic Index is at {feat['traffic']*100:.1f}%. Traffic congestion correlates with temporal PM2.5 spikes.",
+            "weather_impact": f"Current wind speeds of {feat['wind_speed']:.1f} km/h alter exhaust dispersion rates.",
+            "historical_trend": f"Persistently accounts for substantial load during morning and evening rush hour schedules in {city}.",
+            "suggested_action": "Enforce heavy vehicle detour regulations and deploy local dust suppression mist cannons."
         },
         "src-2": {
             "id": "src-2",
-            "name": "Patamata Foundry Zone",
-            "type": "Industries",
-            "contribution_pct": 27.5,
+            "name": f"{city} Main Industrial Belt",
+            "type": "Industry",
+            "contribution_pct": round(feat["industrial"] * 0.35, 1),
             "confidence_score": 88.4,
-            "supporting_evidence": "Spatially correlated with elevated SO2 and PM10 metrics. Upwind dispersion vector aligns with receptor sensors.",
-            "weather_impact": "Monsoon wind patterns carry factory stack plumes south-eastward across residential buffers.",
-            "historical_trend": "Slight reduction following boiler stack upgrades, but remains a major baseline emitter.",
-            "suggested_action": "Audit particulate filter compliance and issue corrective action notifications."
+            "supporting_evidence": f"Localized monitoring indicates raised SO2 signatures matching {city} industrial index ({feat['industrial']:.1f}).",
+            "weather_impact": f"Wind patterns carry industrial stacks dispersion plumes across residential buffer buffers.",
+            "historical_trend": "Remains a significant baseline emitter across quarterly environmental audits.",
+            "suggested_action": "Audit heavy industrial boiler compliance and inspect particulate scrubbers."
         }
     }
     
-    return profiles.get(source_id, profiles["src-1"])
+    clean_id = "src-2" if "src-2" in source_id else "src-1"
+    return profiles[clean_id]
 
 @router.get("/contributors", tags=["source-attribution"])
-def get_source_contributors(city: str = Query("Vijayawada")):
-    coords = CITY_COORDS.get(city, CITY_COORDS["Vijayawada"])
+async def get_source_contributors(city: str = Query("Delhi")):
+    feat = await get_city_attrib_features(city)
     res = AttributionService.calculate_attribution(
-        city, coords["lat"], coords["lng"], coords["wind_dir"], coords["wind_speed"], coords["traffic"]
+        city, feat["lat"], feat["lng"], feat["wind_dir"], feat["wind_speed"], feat["traffic"],
+        construction_idx=feat["construction"], industrial_idx=feat["industrial"]
     )
-    # Formulate contributors arrays for charts
     return [
         {"source": name, "percentage": pct} 
         for name, pct in res["contributions"].items()

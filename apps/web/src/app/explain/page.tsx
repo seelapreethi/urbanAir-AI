@@ -186,6 +186,33 @@ export default function ExplainPage() {
                       </ResponsiveContainer>
                     </div>
                   </div>
+
+                  {/* Feature explanation decipher panel */}
+                  <div className="bg-surface border border-border rounded-xl p-5 space-y-3.5 text-left">
+                    <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
+                      <Brain className="w-4 h-4 text-accent" />
+                      <h4 className="text-xs font-bold text-ink-primary uppercase tracking-wider font-mono">AI Feature Interpretation Guide</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      <div className="space-y-1">
+                        <span className="font-bold text-slate-200">Particulate Concentrations (PM2.5 / PM10)</span>
+                        <p className="text-slate-450 leading-relaxed">Tracks ambient fine dust. Higher coefficients indicate heavy industrial stack emissions, burning events, or vehicle combustion exhausts.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="font-bold text-slate-200">Meteorological Stagnation (Relative Humidity)</span>
+                        <p className="text-slate-450 leading-relaxed">High humidity indexes trap pollutants near the surface, blocking vertical column dispersal. Accelerates condensation and particulate clustering.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="font-bold text-slate-200">Dispersal Vectors (Wind Speed)</span>
+                        <p className="text-slate-450 leading-relaxed">Stronger horizontal winds sweep particulates out of urban centers. Low speed boundaries (&lt; 8 km/h) trigger severe air stagnation warnings.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="font-bold text-slate-200">Atmospheric Conversion (Temperature)</span>
+                        <p className="text-slate-450 leading-relaxed">Triggers chemical transformation of precursors like nitrogen oxides (NOx) and volatile organic compounds (VOCs) into secondary ozone (O3).</p>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               )}
             </div>

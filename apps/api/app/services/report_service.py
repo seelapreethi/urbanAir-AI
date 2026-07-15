@@ -1,5 +1,9 @@
 from typing import List, Dict, Any
 from datetime import datetime
+from app.services.providers.weather_provider import WeatherProvider
+from app.services.providers.aqi_provider import AQIProvider
+from app.services.providers.city_data_provider import CityDataProvider
+from app.services.health_service import HealthService
 
 class ReportService:
     """
@@ -30,7 +34,7 @@ class ReportService:
         ]
 
     @classmethod
-    def generate_report(
+    async def generate_report(
         cls, 
         title: str, 
         report_type: str, 
@@ -38,25 +42,37 @@ class ReportService:
         city: str, 
         modules: List[str]
     ) -> Dict[str, Any]:
-        # Formulate executive summaries blocks
+        weather = await WeatherProvider(city).fetch_data()
+        aqi = await AQIProvider(city).fetch_data()
+        city_data = await CityDataProvider(city).fetch_data()
+        risk = HealthService.classify_risk(aqi["aqi"])
+
+        # Formulate executive summaries blocks dynamically
         summary = (
             f"Executive Summary for {city} prepared on {datetime.utcnow().strftime('%Y-%m-%d')}. "
-            f"The mean AQI was 142 (Moderate Risk) with PM2.5 as the dominant pollutant. "
-            f"Dispersion models attribute 42% of local hotspots to Benz Circle traffic gridlocks. "
-            f"Enforcement compliance checklist reports 3 out of 4 corrective dispatches completed."
+            f"The live monitored AQI is {aqi['aqi']} ({risk['risk_level']}) with PM2.5 at {aqi['pm2_5']} µg/m³ and PM10 at {aqi['pm10']} µg/m³. "
+            f"Local weather sensors report temperature of {weather['temperature']}°C, relative humidity at {weather['humidity']}%, "
+            f"and wind speed of {weather['wind_speed']} km/h. "
+            f"Source attribution models calculate traffic contribution index at {city_data['traffic_density_index']:.1f}% "
+            f"and construction index at {city_data['active_construction_index']:.1f}%."
         )
 
         findings = [
-            f"AQI spikes correlate directly with wind speeds below 10 km/h.",
-            f"Benz Circle remains the highest source attribution cluster at 42%.",
-            f"Deploying mist sweepers mitigated PM10 thresholds by 12 points on Friday."
+            f"Ambient AQI is currently classified as {risk['risk_level']}.",
+            f"Fine particulates PM2.5 level stands at {aqi['pm2_5']} µg/m³, which exceeds standard WHO daily guidelines.",
+            f"Dominant emission source attributed for {city} is {city_data['dominant_source']}."
         ]
 
+        if weather["wind_speed"] < 8.0:
+            findings.append("Stagnant weather conditions (wind speed < 8 km/h) are preventing particulate dispersion.")
+
         actions = [
-            "Maintain industrial inspections during night shifts.",
-            "Integrate traffic diverters near Benz Circle during morning rush hours.",
-            "Deploy warning alerts to citizens via advisory systems."
+            f"Prioritize inspection dispatches targeting active construction sites in {city} (Index: {city_data['active_construction_index']:.1f}).",
+            "Coordinate with traffic authorities to route commercial logistics around central nodes during stagnation events."
         ]
+
+        if aqi["aqi"] > 200:
+            actions.append("Issue public health warnings recommending N95 mask compliance for outdoor transit.")
 
         return {
             "report_id": f"rep-{int(datetime.utcnow().timestamp())}",

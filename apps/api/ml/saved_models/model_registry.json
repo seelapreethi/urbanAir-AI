@@ -1,0 +1,30 @@
+{
+  "versions": [
+    {
+      "version": "v_old",
+      "algorithm": "XGBRegressor",
+      "training_date": "2026-07-14T20:58:49.560476",
+      "dataset_version": "v1",
+      "metrics": {
+        "rmse": 18.0,
+        "mae": 14.0,
+        "r2": 0.91
+      },
+      "status": "Production"
+    },
+    {
+      "version": "v_new",
+      "algorithm": "XGBRegressor",
+      "training_date": "2026-07-14T20:58:49.566346",
+      "dataset_version": "v1",
+      "metrics": {
+        "rmse": 15.0,
+        "mae": 11.0,
+        "r2": 0.94
+      },
+      "status": "Archived"
+    }
+  ],
+  "production_version": "v_old",
+  "rollback_version": null
+}

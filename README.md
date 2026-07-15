@@ -1,129 +1,97 @@
 # UrbanAir AI — Smart City Air Quality Intelligence Platform
 
-From Monitoring Pollution to Preventing It.
+> From Monitoring Pollution to Preventing It.
 
-UrbanAir AI is an AI-powered decision support platform for city administrators that combines AQI sensors, weather forecasting, satellite imagery, traffic congestion profiles, and GIS datasets into an actionable control center.
+UrbanAir AI is an enterprise-grade AI decision-support platform for municipal authorities. It aggregates raw environmental feeds—including public CPCB sensors, weather forecasts, Sentinel-5P satellite indices, traffic grids, and local zoning layers—into a unified GIS Command Center. Rather than just displaying indexes, it analyzes causes, projects future trends, and ranks ranked policy interventions.
 
 ---
 
-## Workspace Structure
+## 🏗 Monorepo Architecture
 
-The project is structured as an npm workspaces monorepo:
+The workspace is structured as an NPM workspaces monorepo:
 
 ```text
 UrbanAir-AI/
 ├── apps/
-│   ├── web/            # Next.js 15 (React 19 + TypeScript + Tailwind)
-│   └── api/            # FastAPI Backend (Python 3.11 + SQLAlchemy + PostGIS)
+│   ├── web/            # Next.js 15 (React 19, TypeScript, TailwindCSS, Lucide Icons)
+│   └── api/            # FastAPI (Python 3.11, SQLAlchemy, PostGIS, Uvicorn, SQLite/PostgreSQL)
 ├── packages/
-│   ├── shared/         # Shared typescript configurations and type interfaces
-│   └── ui/             # Optional shared component library
-├── docker/             # Docker deployment configurations
-├── docs/               # System architecture and specifications
-└── docker-compose.yml  # Local services (PostgreSQL + PostGIS and Redis)
+│   ├── shared/         # Shared TypeScript interfaces & types declarations
+│   └── ui/             # Reusable UI component configurations
+├── datasets/           # Local Grounded RAG Database (WHO, CPCB limits, policy indexes)
+├── docker-compose.yml  # Orchestrates PostgreSQL, Redis, API, and Next.js containers
+└── README.md           # Deployment & Setup guidelines
 ```
 
 ---
 
-## Local Development Setup
+## 🛠 Features Implemented
 
-### Prerequisites
-
-- **Node.js**: `v18.0.0` or higher
-- **npm**: `v9.0.0` or higher
-- **Python**: `3.11`
-- **Docker & Docker Compose** (for database containerization)
-
----
-
-### Step 1: Environment Configuration
-
-Copy the example environment variables file at the root:
-
-```bash
-cp .env.example .env
-```
-
-Review the values inside `.env`. The database connects to localhost by default.
+1. **GIS Interactive Maps Workspace**
+   - Centered around OpenStreetMap tiles containing toggleable layers for Schools, Hospitals, Inspections, and Attributed Emission points.
+   - Animated wind vector overlay indicating pollution dispersion fields.
+2. **AI Telemetry Engine**
+   - Computes causal analysis (load contributions from Traffic, Industry, Burning), forecasts 72-hour timeline vectors, and evaluates demographic risk exposure guidelines.
+3. **Admin Settings & Metrics Diagnostics**
+   - Configures theme preferences, alert thresholds, default cities, and displays live backend container CPU/memory usage and cache hit ratios.
 
 ---
 
-### Step 2: Spin Up Local Services
+## 🐳 Docker Production Orchestration
 
-Launch the database (PostgreSQL with PostGIS extension) and Redis using Docker Compose:
-
-```bash
-docker compose up -d
-```
-
-Verify that the databases are healthy and running:
+To compile and launch the entire stack (Next.js, FastAPI, PostGIS, and Redis) locally or on cloud targets:
 
 ```bash
+# Build and run all container services in background
+docker compose up --build -d
+
+# Verify all containers are running and healthy
 docker compose ps
 ```
 
+Services are exposed at:
+- **Command Center Dashboard**: [http://localhost:3000](http://localhost:3000)
+- **FastAPI Documentation & Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Health Verification Route**: [http://localhost:8000/api/v1/monitor/health](http://localhost:8000/api/v1/monitor/health)
+
 ---
 
-### Step 3: Install Workspaces Dependencies
+## 💻 Local Development Setup
 
-Run this from the monorepo root to link packages and install node modules:
-
+### Step 1: Install Workspace Dependencies
+From the repository root directory:
 ```bash
 npm install
-```
-
-Build the shared typescript type package:
-
-```bash
 npm run build:shared
 ```
 
----
+### Step 2: Launch Databases & Cache Pools
+```bash
+docker compose up db redis -d
+```
 
-### Step 4: Start the FastAPI Backend
-
-1. Navigate to the backend directory:
-   ```bash
-   cd apps/api
-   ```
-2. Create and activate a Python virtual environment:
-   ```bash
-   python -m venv .venv
-   # On Windows:
-   .venv\Scripts\activate
-   # On macOS/Linux:
-   source .venv/bin/activate
-   ```
-3. Install Python dependencies:
+### Step 3: Run FastAPI Backend
+1. Go to `apps/api/`.
+2. Activate your virtual env and install python packages:
    ```bash
    pip install -r requirements.txt
    ```
-4. Start the FastAPI server:
+3. Run the uvicorn development server:
    ```bash
-   uvicorn app.main:app --reload --port 8000
+   python -m uvicorn app.main:app --reload --port 8000
    ```
 
-The Swagger API documentation will be available at: [http://localhost:8000/docs](http://localhost:8000/docs).
-Upon start, the database schemas are automatically created, and standard development credentials are seeded.
-
----
-
-### Step 5: Start the Next.js Frontend
-
-Run this from the monorepo root:
-
+### Step 4: Run Next.js Frontend
+From the root workspace folder:
 ```bash
 npm run dev:web
 ```
 
-The web console will be available at: [http://localhost:3000](http://localhost:3000).
-
 ---
 
-## Development Seed Credentials
+## 🔒 Seed Accounts
 
-The optional seeding script populates these standard accounts when `ENVIRONMENT=development`:
-
+The startup initialization automatically seeds standard development accounts:
 - **Administrator**: `admin@urbanair.ai` / `Admin@123`
 - **City Officer**: `officer@urbanair.ai` / `Officer@123`
 - **Citizen**: `citizen@urbanair.ai` / `Citizen@123`

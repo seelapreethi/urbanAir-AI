@@ -1,37 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* Default is Dark Mode */
+  /* Default is Dark Mode - Premium Enterprise UI */
   :root {
-    --canvas: #0B0D10;
-    --surface: #14171B;
-    --surface-raised: #1B1F24;
-    --border: #23272E;
+    --canvas: #090B0E;
+    --surface: #111419;
+    --surface-raised: #181C23;
+    --border: #1E242E;
     
-    --ink-primary: #EDEDEC;
-    --ink-secondary: #9A9FA8;
-    --ink-tertiary: #5C6169;
+    --ink-primary: #F8FAFC;
+    --ink-secondary: #94A3B8;
+    --ink-tertiary: #475569;
     
-    --accent: #5B8CFF;
-    --accent-soft: rgba(91, 140, 255, 0.08);
+    /* Premium Deep Emerald / Cyan accents */
+    --accent: #0D9488; /* Emerald Teal */
+    --accent-soft: rgba(13, 148, 136, 0.06);
     
     /* AQI Colors */
-    --aqi-good: #3DD68C;
-    --aqi-moderate: #E8C547;
-    --aqi-unhealthy-sensitive: #F2994A;
-    --aqi-unhealthy: #EF5C5C;
-    --aqi-very-unhealthy: #B24FE0;
-    --aqi-hazardous: #7A2E43;
+    --aqi-good: #10B981;
+    --aqi-moderate: #F59E0B;
+    --aqi-unhealthy-sensitive: #F97316;
+    --aqi-unhealthy: #EF4444;
+    --aqi-very-unhealthy: #8B5CF6;
+    --aqi-hazardous: #7C2D12;
     
     /* Semantic */
-    --success: #3DD68C;
-    --warning: #E8C547;
-    --danger: #FF6B6B;
-    --info: #5B8CFF;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --info: #06B6D4;
     
-    /* ShadCN Overlays (Dark map) */
     --background: var(--canvas);
     --foreground: var(--ink-primary);
     
@@ -42,7 +44,7 @@
     --popover-foreground: var(--ink-primary);
     
     --primary: var(--accent);
-    --primary-foreground: #0B0D10;
+    --primary-foreground: #090B0E;
     
     --secondary: var(--surface-raised);
     --secondary-foreground: var(--ink-primary);
@@ -54,7 +56,7 @@
     --accent-ui-foreground: var(--ink-primary);
     
     --destructive: var(--danger);
-    --destructive-foreground: #0B0D10;
+    --destructive-foreground: #090B0E;
     
     --input: var(--border);
     --ring: var(--accent);
@@ -62,21 +64,20 @@
     --radius: 12px;
   }
 
-  /* Light Mode is Secondary Override */
+  /* Light Mode */
   .light {
-    --canvas: #FAFAF9;
+    --canvas: #F8FAFC;
     --surface: #FFFFFF;
-    --surface-raised: #FFFFFF;
-    --border: #E7E5E2;
+    --surface-raised: #F1F5F9;
+    --border: #E2E8F0;
     
-    --ink-primary: #17181A;
-    --ink-secondary: #6B6F76;
-    --ink-tertiary: #9B9EA4;
+    --ink-primary: #0F172A;
+    --ink-secondary: #475569;
+    --ink-tertiary: #94A3B8;
     
-    --accent: #5B8CFF;
-    --accent-soft: rgba(91, 140, 255, 0.08);
+    --accent: #0D9488;
+    --accent-soft: rgba(13, 148, 136, 0.06);
     
-    /* ShadCN Overlays (Light map) */
     --background: var(--canvas);
     --foreground: var(--ink-primary);
     
@@ -92,7 +93,7 @@
     --secondary: var(--border);
     --secondary-foreground: var(--ink-primary);
     
-    --muted: #FAFAF9;
+    --muted: #F8FAFC;
     --muted-foreground: var(--ink-secondary);
     
     --destructive: var(--danger);
@@ -110,11 +111,41 @@
   body {
     background-color: var(--canvas);
     color: var(--ink-primary);
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px; /* Clear visible baseline */
+    line-height: 1.625;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
-/* Custom Signature Elements */
+/* Glassmorphism card utility */
+.glass-panel {
+  background: rgba(17, 20, 25, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-tertiary);
+}
 
 /* AQI Pulse Ring Animation */
 @keyframes breathing {

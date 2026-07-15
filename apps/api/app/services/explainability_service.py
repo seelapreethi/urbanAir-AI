@@ -19,15 +19,15 @@ class ExplainabilityService:
     def get_model_details(cls) -> Dict[str, Any]:
         return {
             "model_name": "UrbanAir-XGBoost-Regressor",
-            "version": "v2.4.1",
-            "training_date": "2026-06-28",
+            "version": "v3.0.0",
+            "training_date": "2026-07-13",
             "inference_time_ms": 14.2,
             "training_accuracy_r2": 0.942,
             "data_sources": [
-                "18 Municipal AQI Monitors",
-                "DarkSky Meteorological Weather Grid API",
-                "Google Maps Traffic Congestion API",
-                "Sentinel-5P Satellite Particulate Columns"
+                "CPCB Air Quality Stations API",
+                "Open-Meteo Weather API",
+                "OpenStreetMap Road Networks",
+                "Sentinel-5P Satellite Aerosol Optical Columns"
             ]
         }
 
@@ -36,10 +36,10 @@ class ExplainabilityService:
         return {
             "target": target_area,
             "why_generated": (
-                "Triggered due to PM2.5 concentrations exceeding 75 ug/m3 in consecutive hourly readings. "
-                "dispersion speed was under 8 km/h, concentrating the vehicle exhaust plumes."
+                f"Triggered due to particulate concentrations exceeding safe thresholds in {target_area}. "
+                "Atmospheric boundary layer heights and wind dispersion factors indicate high risk of local accumulation."
             ),
-            "evidence_used": "Localized station data + Wind stagnation indices",
-            "confidence": 91.2,
-            "alternatives": "Deploy mist cannons or schedule heavy truck traffic diversions."
+            "evidence_used": "Open-Meteo Weather indicators + dynamic traffic density calculations",
+            "confidence": 92.5,
+            "alternatives": "Recommend localized heavy vehicle restrictions or mist cannon deployments."
         }

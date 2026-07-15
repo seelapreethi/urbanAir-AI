@@ -1,0 +1,29 @@
+{
+  "model_architecture": "XGBRegressor",
+  "train_test_split": "80/20",
+  "sample_size_test": 1440,
+  "evaluation_metrics": {
+    "root_mean_squared_error": 15.806,
+    "mean_absolute_error": 12.576,
+    "mean_absolute_percentage_error": 9.486,
+    "r2_coefficient_of_determination": 0.935
+  },
+  "feature_importances": {
+    "city_code": 0.020099999383091927,
+    "temperature": 0.003599999938160181,
+    "humidity": 0.005100000184029341,
+    "wind_speed": 0.0034000000450760126,
+    "traffic_index": 0.1200999990105629,
+    "aqi_lag_1": 0.766700029373169,
+    "aqi_lag_24": 0.06710000336170197,
+    "hour": 0.0027000000700354576,
+    "weekday": 0.002199999988079071,
+    "month": 0.0034000000450760126,
+    "weekend": 0.0,
+    "is_festival": 0.0,
+    "wind_code": 0.0,
+    "temp_code": 0.0,
+    "humid_code": 0.0,
+    "trend_code": 0.00570000009611249
+  }
+}

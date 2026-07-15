@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEnforcementStore } from "@/store/enforcement";
+import { useCityStore } from "@/store/city";
 
 // Viewport controller
 function MapController({ center }: { center: [number, number] }) {
@@ -38,6 +39,7 @@ const createHotspotIcon = (priority: string, visitOrder: number) => {
 
 export default function EnforcementMapContent({ cityCenter }: { cityCenter: [number, number] }) {
   const { dispatchRoutes, selectHotspot } = useEnforcementStore();
+  const { selectedCity } = useCityStore();
 
   // Coordinates array for drawing route lines connecting hotspots
   const routeLinePoints = dispatchRoutes.map((hp) => [hp.latitude, hp.longitude] as [number, number]);
@@ -80,7 +82,7 @@ export default function EnforcementMapContent({ cityCenter }: { cityCenter: [num
               hp.suggested_visit_order
             )}
             eventHandlers={{
-              click: () => selectHotspot(hp.hotspot_id, "Vijayawada")
+              click: () => selectHotspot(hp.hotspot_id, selectedCity)
             }}
           >
             <Popup>

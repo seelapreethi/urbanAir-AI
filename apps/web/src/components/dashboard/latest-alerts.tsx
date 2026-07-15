@@ -19,7 +19,7 @@ interface LatestAlertsProps {
 
 export function LatestAlerts({ alerts = [] }: LatestAlertsProps) {
   const getSeverityColor = (sev: string) => {
-    switch (sev.toLowerCase()) {
+    switch ((sev || "").toLowerCase()) {
       case "critical":
         return "bg-danger/10 border-danger/25 text-danger";
       case "high":

@@ -83,6 +83,24 @@ async def lifespan(app: FastAPI):
         logger.error(f"Error seeding database: {e}")
     finally:
         db.close()
+
+    # Load ML model singleton at startup
+    try:
+        from ml.model_loader import MLModelLoader
+        logger.info("Initializing ML Model Loader at startup...")
+        MLModelLoader.load_model()
+    except Exception as e:
+        logger.error(f"Failed to initialize MLModelLoader: {e}")
+
+    # Launch Real-Time Data Ingestion Scheduler
+    try:
+        import asyncio
+        from app.data_pipeline.scheduler import start_background_scheduler
+        loop = asyncio.get_running_loop()
+        start_background_scheduler(loop)
+        logger.info("Started Ingestion Pipeline background scheduler loop.")
+    except Exception as e:
+        logger.error(f"Failed to start Ingestion Pipeline: {e}")
         
     yield
 

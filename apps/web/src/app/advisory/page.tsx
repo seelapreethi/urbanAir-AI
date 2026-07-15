@@ -245,24 +245,47 @@ export default function AdvisoryPage() {
                   </div>
 
                   {/* Risk demographic bar charts */}
-                  {riskBreakdown && (
-                    <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-accent" />
-                        <h4 className="text-xs font-bold text-ink-primary uppercase tracking-wider font-mono">Demographic Risk Exposure Map</h4>
+                  {riskBreakdown && (() => {
+                    const demographicsData = riskBreakdown.population_demographics.map((d) => {
+                      let numericRiskValue = 1;
+                      const riskLower = d.risk.toLowerCase();
+                      if (riskLower.includes("severe") || riskLower.includes("very high") || riskLower.includes("hazardous")) {
+                        numericRiskValue = 5;
+                      } else if (riskLower.includes("high") || riskLower.includes("unhealthy")) {
+                        numericRiskValue = 4;
+                      } else if (riskLower.includes("moderate") || riskLower.includes("satisfactory")) {
+                        numericRiskValue = 3;
+                      } else if (riskLower.includes("low")) {
+                        numericRiskValue = 2;
+                      } else {
+                        numericRiskValue = 1;
+                      }
+                      return {
+                        group: d.group,
+                        riskLevel: numericRiskValue,
+                        riskLabel: d.risk
+                      };
+                    });
+
+                    return (
+                      <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-accent" />
+                          <h4 className="text-xs font-bold text-ink-primary uppercase tracking-wider font-mono">Demographic Risk Exposure Map</h4>
+                        </div>
+                        <div className="h-[200px] w-full text-[10px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={demographicsData} layout="vertical" margin={{ top: 5, right: 15, left: 35, bottom: 5 }}>
+                              <XAxis type="number" domain={[0, 5]} hide />
+                              <YAxis type="category" dataKey="group" stroke="var(--ink-secondary)" tickLine={false} />
+                              <Tooltip formatter={(value, name, props) => [props.payload.riskLabel, "Exposure Risk"]} />
+                              <Bar dataKey="riskLevel" fill="#EF4444" fillOpacity={0.65} radius={[0, 4, 4, 0]} name="Exposure" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
-                      <div className="h-[180px] w-full text-[10px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={riskBreakdown.population_demographics} layout="vertical" margin={{ top: 5, right: 5, left: 35, bottom: 5 }}>
-                            <XAxis type="category" dataKey="risk" stroke="var(--color-ink-tertiary)" tickLine={false} />
-                            <YAxis type="category" dataKey="group" stroke="var(--color-ink-tertiary)" tickLine={false} />
-                            <Tooltip />
-                            <Bar dataKey="group" fill="#EF4444" fillOpacity={0.65} radius={[0, 4, 4, 0]} name="Exposure" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                 </div>
 

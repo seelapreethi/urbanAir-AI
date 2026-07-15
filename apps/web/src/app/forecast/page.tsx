@@ -176,7 +176,7 @@ export default function ForecastPage() {
                   ))}
                 </div>
 
-                {/* 2. AI Explanation Panel */}
+                {/* 2. AI Forecast Explanation Banner */}
                 <div className="border border-accent/20 bg-accent-soft rounded-xl p-5 flex gap-4 items-start shadow-sm">
                   <div className="p-3 bg-accent/10 border border-accent/20 rounded-xl text-accent flex-shrink-0">
                     <Brain className="w-6 h-6 animate-pulse" />
@@ -184,10 +184,10 @@ export default function ForecastPage() {
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-bold text-accent uppercase tracking-wider font-mono">Cognitive Explanations</span>
-                      <span className="text-[10px] text-ink-tertiary font-mono">| Active engine: {forecastSummary.model_selected}</span>
+                      <span className="text-[10px] text-ink-tertiary font-mono">| Active engine: {forecastSummary?.model_selected || "--"}</span>
                     </div>
                     <p className="text-sm text-ink-primary leading-relaxed font-sans font-medium">
-                      {forecastSummary.ai_explanation}
+                      {forecastSummary?.ai_explanation || "Analyzing environmental indicators and generating explanations..."}
                     </p>
                   </div>
                 </div>

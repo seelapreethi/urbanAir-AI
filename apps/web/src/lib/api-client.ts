@@ -92,11 +92,24 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
     
     // Parse response
     const json = await response.json();
-    if (!response.ok || !json.success) {
-      throw new Error(json.message || `Request failed with status ${response.status}`);
+    if (!response.ok) {
+      throw new Error(json?.message || `Request failed with status ${response.status}`);
     }
     
-    return json as ApiResponse<T>;
+    // If the response is already wrapped as ApiResponse, validate and return it
+    if (json && typeof json === "object" && "success" in json) {
+      if (!json.success) {
+        throw new Error(json.message || "Request failed");
+      }
+      return json as ApiResponse<T>;
+    }
+    
+    // Otherwise, wrap the raw response payload
+    return {
+      success: true,
+      data: json,
+      timestamp: new Date().toISOString()
+    } as unknown as ApiResponse<T>;
   } catch (error) {
     const isNetworkError = error instanceof TypeError || (error instanceof Error && error.message.includes("Failed to fetch"));
     if (retryCount < 2 && isNetworkError) {

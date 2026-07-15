@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 export function Card({ className = "", children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`border border-border bg-surface rounded-xl p-6 shadow-sm ${className}`}
+      className={`border border-border/80 bg-[#111419]/90 backdrop-blur-md rounded-xl p-5 shadow-lg shadow-black/20 hover:border-teal-500/20 transition-all duration-300 ${className}`}
       {...props}
     >
       {children}
@@ -14,7 +14,7 @@ export function Card({ className = "", children, ...props }: React.HTMLAttribute
 
 export function CardHeader({ className = "", children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`flex flex-col gap-1.5 mb-4 ${className}`} {...props}>
+    <div className={`flex flex-col gap-1 mb-3.5 border-b border-border/40 pb-3 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -23,7 +23,7 @@ export function CardHeader({ className = "", children, ...props }: React.HTMLAtt
 export function CardTitle({ className = "", children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={`text-lg font-semibold tracking-tight font-display text-ink-primary ${className}`}
+      className={`text-[14px] font-bold tracking-wider font-display uppercase text-slate-100 ${className}`}
       {...props}
     >
       {children}
@@ -33,7 +33,7 @@ export function CardTitle({ className = "", children, ...props }: React.HTMLAttr
 
 export function CardDescription({ className = "", children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={`text-xs text-ink-secondary leading-normal ${className}`} {...props}>
+    <p className={`text-[11px] text-slate-400 leading-normal font-sans ${className}`} {...props}>
       {children}
     </p>
   );
@@ -41,7 +41,7 @@ export function CardDescription({ className = "", children, ...props }: React.HT
 
 export function CardContent({ className = "", children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`${className}`} {...props}>
+    <div className={`text-slate-300 font-sans ${className}`} {...props}>
       {children}
     </div>
   );
@@ -60,41 +60,42 @@ interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function StatCard({ title, value, icon, trend, className = "", ...props }: StatCardProps) {
   return (
-    <Card className={`relative overflow-hidden ${className}`} {...props}>
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <span className="text-xs font-semibold text-ink-secondary uppercase tracking-widest font-mono">
+    <Card className={`relative overflow-hidden group hover:scale-[1.01] hover:shadow-teal-900/5 transition-all duration-300 ${className}`} {...props}>
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500/60 group-hover:bg-teal-500 transition-colors" />
+      <div className="flex items-center justify-between gap-4 mb-3">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-display">
           {title}
         </span>
-        {icon && <div className="text-ink-tertiary">{icon}</div>}
+        {icon && <div className="text-slate-500 group-hover:text-teal-400 transition-colors">{icon}</div>}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-3xl font-extrabold tracking-tight font-mono text-ink-primary leading-none">
+      <div className="flex flex-col gap-1 pl-1">
+        <span className="text-2xl font-extrabold tracking-tight font-display text-slate-100 leading-none">
           {value}
         </span>
         
         {trend && (
-          <div className="flex items-center gap-1.5 text-xs">
+          <div className="flex items-center gap-1 mt-2 text-[10.5px]">
             {trend.direction === "up" && (
-              <TrendingUp className="w-3.5 h-3.5 text-danger" />
+              <TrendingUp className="w-3.5 h-3.5 text-rose-500" />
             )}
             {trend.direction === "down" && (
-              <TrendingDown className="w-3.5 h-3.5 text-success" />
+              <TrendingDown className="w-3.5 h-3.5 text-teal-400" />
             )}
             <span
               className={`font-semibold ${
                 trend.direction === "up"
-                  ? "text-danger"
+                  ? "text-rose-500"
                   : trend.direction === "down"
-                  ? "text-success"
-                  : "text-ink-tertiary"
+                  ? "text-teal-400"
+                  : "text-slate-500"
               }`}
             >
               {trend.direction === "up" ? "+" : ""}
               {trend.value}
             </span>
             {trend.label && (
-              <span className="text-ink-tertiary">{trend.label}</span>
+              <span className="text-slate-500 font-medium ml-0.5">{trend.label}</span>
             )}
           </div>
         )}

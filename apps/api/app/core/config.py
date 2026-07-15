@@ -19,6 +19,24 @@ class Settings(BaseSettings):
     # Redis Connection
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # ML Forecasting Configurations
+    USE_REAL_MODEL: bool = True
+    USE_DEMO_MODEL: bool = False
+
+    # Real-Time Data Ingestion Pipeline Configurations
+    ENABLE_REAL_DATA: bool = True
+    ENABLE_CACHE: bool = True
+    CACHE_TTL: int = 1800
+    DATA_FETCH_INTERVAL: int = 3600
+
+    # MLOps Configurations
+    ENABLE_AUTO_RETRAIN: bool = True
+    MIN_NEW_RECORDS: int = 500
+    RETRAIN_INTERVAL_DAYS: int = 7
+    ENABLE_MODEL_PROMOTION: bool = True
+    ENABLE_DRIFT_DETECTION: bool = True
+    ENABLE_ROLLBACK: bool = True
+
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",

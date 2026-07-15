@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-le
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSourceStore } from "@/store/source";
+import { useCityStore } from "@/store/city";
 
 // Viewport controller
 function MapController({ center }: { center: [number, number] }) {
@@ -47,6 +48,7 @@ const createSourceIcon = (type: string) => {
 
 export default function SourceMapContent({ cityCenter }: { cityCenter: [number, number] }) {
   const { mapSources, selectSource } = useSourceStore();
+  const { selectedCity } = useCityStore();
 
   const getSourceColor = (type: string) => {
     if (type === "Traffic") return "#3B82F6";
@@ -90,7 +92,7 @@ export default function SourceMapContent({ cityCenter }: { cityCenter: [number, 
               position={[src.latitude, src.longitude]}
               icon={createSourceIcon(src.type)}
               eventHandlers={{
-                click: () => selectSource(src.id, "Vijayawada") // fallback city parameter, handles select
+                click: () => selectSource(src.id, selectedCity)
               }}
             >
               <Popup>

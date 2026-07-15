@@ -58,8 +58,8 @@ export default function EnforcementPage() {
   // Filter recommendations based on search
   const filteredRecs = recommendations.filter(
     (rec) =>
-      rec.action_text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rec.responsible_authority.toLowerCase().includes(searchQuery.toLowerCase())
+      (rec.action_text || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (rec.responsible_authority || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getPriorityColor = (priority: string) => {
@@ -205,7 +205,7 @@ export default function EnforcementPage() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-5 scrollbar-thin">
                   <div className="space-y-1">
                     <h4 className="text-sm font-extrabold text-ink-primary leading-tight font-display">
-                      Hotspot HS-{evidenceDetails.hotspot_id.substring(0, 4)}
+                      Hotspot HS-{String(evidenceDetails.hotspot_id).substring(0, 4)}
                     </h4>
                     <span className="text-[10px] text-ink-tertiary uppercase block font-mono">{evidenceDetails.estimated_source}</span>
                   </div>

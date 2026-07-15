@@ -24,9 +24,9 @@ export function RouteGuard({ children }: RouteGuardProps) {
 
     // Role-based restrictions check
     const officerRoutes = [
-      "/dashboard/enforcement",
-      "/dashboard/simulator",
-      "/dashboard/reports",
+      "/enforcement",
+      "/scenario",
+      "/reports",
     ];
 
     const adminRoutes = [
