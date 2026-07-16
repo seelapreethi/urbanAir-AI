@@ -24,10 +24,33 @@ if settings.DATABASE_URL.startswith("sqlite"):
     except ImportError:
         pass
 
+import socket
+import urllib.parse
+
+def resolve_ipv4(host: str) -> str:
+    try:
+        addr_info = socket.getaddrinfo(host, None, socket.AF_INET)
+        if addr_info:
+            return addr_info[0][4][0]
+    except Exception as e:
+        print(f"Error resolving IPv4 address for host {host}: {e}")
+    return None
+
 # For SQLite during test mode or fallback, check the URL
 connect_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+else:
+    try:
+        parsed = urllib.parse.urlparse(settings.DATABASE_URL)
+        if parsed.hostname:
+            ipv4_ip = resolve_ipv4(parsed.hostname)
+            if ipv4_ip:
+                connect_args["hostaddr"] = ipv4_ip
+                connect_args["connect_timeout"] = 10
+                print(f"Bypassed Render IPv6 boundary: mapped {parsed.hostname} -> {ipv4_ip}")
+    except Exception as e:
+        print(f"Failed to resolve IPv4 hostaddr fallback: {e}")
 
 engine = create_engine(
     settings.DATABASE_URL,
