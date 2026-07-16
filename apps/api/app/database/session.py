@@ -27,13 +27,13 @@ if settings.DATABASE_URL.startswith("sqlite"):
 import socket
 import urllib.parse
 
-def resolve_ipv4(host: str) -> str:
+def resolve_ipv4(host: str, port: int = 5432) -> str:
     try:
-        addr_info = socket.getaddrinfo(host, None, socket.AF_INET)
+        addr_info = socket.getaddrinfo(host, port, socket.AF_INET)
         if addr_info:
             return addr_info[0][4][0]
     except Exception as e:
-        print(f"Error resolving IPv4 address for host {host}: {e}")
+        print(f"Error resolving IPv4 address for host {host} on port {port}: {e}")
     return None
 
 # For SQLite during test mode or fallback, check the URL
@@ -44,7 +44,8 @@ else:
     try:
         parsed = urllib.parse.urlparse(settings.DATABASE_URL)
         if parsed.hostname:
-            ipv4_ip = resolve_ipv4(parsed.hostname)
+            port = parsed.port if parsed.port is not None else 5432
+            ipv4_ip = resolve_ipv4(parsed.hostname, port)
             if ipv4_ip:
                 connect_args["hostaddr"] = ipv4_ip
                 connect_args["connect_timeout"] = 10
