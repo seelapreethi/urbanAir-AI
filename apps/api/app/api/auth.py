@@ -71,8 +71,8 @@ def get_me(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    role = UserRepository.get_role_by_id(db, current_user.role_id)
-    role_name = role.role_name if role else "Citizen"
+    role = UserRepository.get_role_by_id(db, str(current_user.role_id))
+    role_name = str(role.role_name) if (role and role.role_name is not None) else "Citizen"
     
     # Define role permissions lists
     permissions = []
@@ -86,12 +86,12 @@ def get_me(
         permissions = ["read:dashboard", "manage:advisories"]
 
     me_data = UserMeResponse(
-        user_id=current_user.user_id,
-        email=current_user.email,
-        first_name=current_user.first_name,
-        last_name=current_user.last_name,
+        user_id=str(current_user.user_id),
+        email=str(current_user.email),
+        first_name=str(current_user.first_name),
+        last_name=str(current_user.last_name) if current_user.last_name is not None else None,
         role_name=role_name,
-        city_id=current_user.city_id,
+        city_id=str(current_user.city_id) if current_user.city_id is not None else None,
         permissions=permissions
     )
     
