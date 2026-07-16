@@ -53,3 +53,28 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Post-process to sanitize database URL
+import urllib.parse
+if settings.DATABASE_URL and not settings.DATABASE_URL.startswith("sqlite"):
+    # Translate legacy postgres:// scheme to postgresql://
+    if settings.DATABASE_URL.startswith("postgres://"):
+        settings.DATABASE_URL = settings.DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        
+    try:
+        if "://" in settings.DATABASE_URL:
+            scheme_split = settings.DATABASE_URL.split("://", 1)
+            scheme = scheme_split[0]
+            remainder = scheme_split[1]
+            
+            if "@" in remainder:
+                last_at_idx = remainder.rfind("@")
+                user_pass_section = remainder[:last_at_idx]
+                host_db_section = remainder[last_at_idx + 1:]
+                
+                if ":" in user_pass_section:
+                    user, password = user_pass_section.split(":", 1)
+                    encoded_password = urllib.parse.quote_plus(password)
+                    settings.DATABASE_URL = f"{scheme}://{user}:{encoded_password}@{host_db_section}"
+    except Exception as e:
+        print(f"Error sanitizing Settings DATABASE_URL: {e}")
