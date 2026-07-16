@@ -1,7 +1,11 @@
 import { useAuthStore } from "@/store/auth";
 import { ApiResponse, AuthTokens } from "@urbanair/shared";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+let BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+if (BASE_URL && !BASE_URL.endsWith("/api/v1")) {
+  const cleaned = BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
+  BASE_URL = `${cleaned}/api/v1`;
+}
 
 interface FetchOptions extends RequestInit {
   retryCount?: number;

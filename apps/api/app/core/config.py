@@ -37,11 +37,13 @@ class Settings(BaseSettings):
     ENABLE_DRIFT_DETECTION: bool = True
     ENABLE_ROLLBACK: bool = True
 
-    # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:8000",
         "https://urbanair.ai",
+        "https://urban-air-ai-web.vercel.app",
+        "https://urban-air-ai.vercel.app",
+        "https://urbanair-ai-web.vercel.app",
     ]
 
     model_config = SettingsConfigDict(
