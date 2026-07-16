@@ -15,14 +15,25 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const getApiUrl = () => {
+    let url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+    if (url && !url.endsWith("/api/v1")) {
+      const cleaned = url.endsWith("/") ? url.slice(0, -1) : url;
+      url = `${cleaned}/api/v1`;
+    }
+    return url;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
+    const apiUrl = getApiUrl();
+
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/auth/login`,
+        `${apiUrl}/auth/login`,
         {
           method: "POST",
           headers: {
@@ -42,7 +53,7 @@ export default function LoginPage() {
 
       // Now fetch /auth/me using access token to retrieve user details
       const meResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/auth/me`,
+        `${apiUrl}/auth/me`,
         {
           headers: {
             Authorization: `Bearer ${tokens.access_token}`,
